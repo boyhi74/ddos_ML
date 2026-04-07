@@ -1,0 +1,99 @@
+import time
+import re
+from dash import Dash, dcc, html, Input, Output
+import plotly.express as px
+import pandas as pd
+from collections import deque
+import requests
+
+# Đường dẫn tới file log
+LOG_FILE = '/home/defense/ddos_defense/logs/defense.log'
+
+# Thông tin Telegram
+TELEGRAM_BOT_TOKEN = "your_bot_token_here"  # Thay bằng token của bạn
+TELEGRAM_CHAT_ID = "your_chat_id_here"    # Thay bằng chat ID của bạn
+
+# Dữ liệu cho dashboard
+dashboard_data = {
+    'time': deque(maxlen=50),
+    'syn': deque(maxlen=50),
+    'udp': deque(maxlen=50),
+    'icmp': deque(maxlen=50),
+    'http': deque(maxlen=50),
+    'slowloris': deque(maxlen=50)
+}
+
+# Đọc file log để lấy dữ liệu
+def read_log_data():
+    try:
+        with open(LOG_FILE, 'r') as f:
+            lines = f.readlines()
+            packet_counts = None
+            attack_message = None
+            # Tìm dòng cuối cùng chứa "Packet counts" và "Phát hiện tấn công"
+            for line in reversed(lines):
+                if "Packet counts:" in line and not packet_counts:
+                    match = re.search(r"Packet counts: ({.*})", line)
+                    if match:
+                        packet_counts = eval(match.group(1))
+                if "Phát hiện tấn công" in line and not attack_message:
+                    attack_message = line.strip()
+                if packet_counts and attack_message:
+                    break
+            return packet_counts, attack_message
+    except Exception as e:
+        print(f"Lỗi khi đọc log: {e}")
+        return None, None
+
+# Gửi cảnh báo Telegram
+def send_telegram_alert(message):
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
+    try:
+        response = requests.post(url, json=payload)
+        if response.status_code != 200:
+            print(f"Lỗi gửi Telegram: {response.text}")
+    except Exception as e:
+        print(f"Lỗi gửi Telegram: {e}")
+
+# Cập nhật dữ liệu dashboard và kiểm tra tấn công
+last_attack_message = None
+def update_dashboard_data():
+    global last_attack_message
+    packet_counts, attack_message = read_log_data()
+    if packet_counts:
+        current_time = time.time()
+        dashboard_data['time'].append(current_time)
+        dashboard_data['syn'].append(packet_counts.get('syn', 0))
+        dashboard_data['udp'].append(packet_counts.get('udp', 0))
+        dashboard_data['icmp'].append(packet_counts.get('icmp', 0))
+        dashboard_data['http'].append(packet_counts.get('http', 0))
+        dashboard_data['slowloris'].append(packet_counts.get('slowloris', 0))
+    
+    if attack_message and attack_message != last_attack_message:
+        send_telegram_alert(attack_message)
+        last_attack_message = attack_message
+
+# Khởi tạo Dash app
+app = Dash(__name__)
+
+app.layout = html.Div([
+    html.H1("DDoS Defense Dashboard"),
+    dcc.Graph(id='live-graph'),
+    dcc.Interval(id="interval-component", interval=5*1000, n_intervals=0)
+])
+
+@app.callback(
+    Output('live-graph', 'figure'),
+    Input('interval-component', 'n_intervals')
+)
+def update_graph(n):
+    update_dashboard_data()
+    df = pd.DataFrame(dashboard_data)
+    fig = px.line(df, x='time', y=['syn', 'udp', 'icmp', 'http', 'slowloris'],
+                  title='Real-Time Traffic Monitoring',
+                  labels={'value': 'Packet Count', 'time': 'Time'})
+    return fig
+
+if __name__ == "__main__":
+    app.run_server(debug=False, host='0.0.0.0', port=8050)
