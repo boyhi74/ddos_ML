@@ -12,8 +12,8 @@ import requests
 LOG_FILE = '/home/defense/ddos_defense/logs/defense.log'
 
 # Thông tin Telegram
-TELEGRAM_BOT_TOKEN = "7655569208:AAG5IgYM8Eel50LOEwEBJZNbMFYjLn3TH3U"
-TELEGRAM_CHAT_ID = "6493373396"  # Thay bằng Chat ID thực tế của bạn
+TELEGRAM_BOT_TOKEN = "x"
+TELEGRAM_CHAT_ID = "x" 
 
 # Dữ liệu cho dashboard
 dashboard_data = {
