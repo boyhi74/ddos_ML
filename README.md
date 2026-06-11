@@ -1,11 +1,11 @@
 # 🛡️ Hệ thống Phát hiện và Phòng chống DDoS bằng Machine Learning
 
 ## 📌 Tổng quan
-[cite_start]Dự án này là một hệ thống bảo mật tự động được thiết kế để phát hiện và ngăn chặn các cuộc tấn công từ chối dịch vụ phân tán (DDoS) theo thời gian thực[cite: 520]. [cite_start]Hệ thống áp dụng cơ chế phát hiện kép: kết hợp giữa kiểm tra ngưỡng động (dynamic thresholds) để bắt các cuộc tấn công phổ biến, và mô hình Machine Learning (Random Forest) để nhận diện các mẫu lưu lượng tấn công phức tạp[cite: 558, 569, 570].
+]Dự án này là một hệ thống bảo mật tự động được thiết kế để phát hiện và ngăn chặn các cuộc tấn công từ chối dịch vụ phân tán (DDoS) theo thời gian thực[cite: 520]. [cite_start]Hệ thống áp dụng cơ chế phát hiện kép: kết hợp giữa kiểm tra ngưỡng động (dynamic thresholds) để bắt các cuộc tấn công phổ biến, và mô hình Machine Learning (Random Forest) để nhận diện các mẫu lưu lượng tấn công phức tạp[cite: 558, 569, 570].
 
 ## ✨ Tính năng nổi bật
-* [cite_start]**Thu thập lưu lượng trực tiếp (Real-time Sniffing):** Sử dụng Scapy để bắt các gói tin TCP, UDP, ICMP trực tiếp trên giao diện mạng (ví dụ: `ens33`)[cite: 563, 581].
-* [cite_start]**Phát hiện đa lớp (Hybrid Detection):** * *Dựa trên ngưỡng:* Xử lý nhanh các tấn công SYN Flood, UDP Flood và Amplification (NetBIOS, LDAP)[cite: 528, 802].
+* **Thu thập lưu lượng trực tiếp (Real-time Sniffing):** Sử dụng Scapy để bắt các gói tin TCP, UDP, ICMP trực tiếp trên giao diện mạng (ví dụ: `ens33`)[cite: 563, 581].
+* **Phát hiện đa lớp (Hybrid Detection):** * *Dựa trên ngưỡng:* Xử lý nhanh các tấn công SYN Flood, UDP Flood và Amplification (NetBIOS, LDAP)[cite: 528, 802].
   * [cite_start]*Dựa trên AI:* Sử dụng thuật toán Random Forest phân loại các hành vi bất thường tinh vi[cite: 530, 803].
 * [cite_start]**Ngăn chặn tự động (Automated Mitigation):** Lập tức đưa IP tấn công vào Blacklist và thực thi lệnh chặn cấp hệ thống thông qua `iptables`[cite: 572, 573, 804].
 * [cite_start]**Cảnh báo qua Telegram:** Ghi nhận log chi tiết và tự động đẩy cảnh báo (Alerts) thời gian thực đến quản trị viên thông qua Telegram Bot[cite: 575, 576, 619].
